@@ -1,0 +1,380 @@
+#!/bin/bash
+    Source
+
+        # ---- scaryrabbit -------------------------------------------------------------------------
+        #
+        # ---- camera database and display program -------------------------------------------------
+        #
+        # Authors: soC , ---------------------------------------------------------------------------
+        #
+        # - requires mplayer, screen ---------------------------------------------------------------
+         
+        clear
+# --------------------------------------------------------------------------------------------------
+        ################################ FUNCTION DECLARATIONS ############################
+        pause()
+        {
+            read -p "Press [Enter] key to continue..." fackEnterKey
+        }
+# --------------------------------------------------------------------------------------------------
+        clearscreen()
+        {
+            clear
+        }
+# --------------------------------------------------------------------------------------------------
+        getTotalRecords()
+        {
+            total=`cat $dbfile | wc -l`
+        	echo "Total records :"$total	
+        }
+# --------------------------------------------------------------------------------------------------
+        viewAllRecords()
+        {
+        	total=`cat $dbfile | wc -l`
+        	echo "Total records :"$total
+        	if [ $total -gt 0 ]
+        	then
+        		i=1
+        		while [ $i -le $total ]
+        		do
+        		echo "$(tput setaf 3)====================================$(tput sgr 0)"
+        			echo "$(tput blink)CAMERA FEED$(tput sgr 0) - "$i
+        			echo "$(tput setaf 3)=============$(tput sgr 0)"
+        			record=`cat $dbfile | head -$i | tail -1`
+        			cam_cctvid=`echo $record | cut -d "|" -f1`
+        			cam_name=`echo $record | cut -d "|" -f2`
+        			cam_countyname=`echo $record | cut -d "|" -f3`
+        			cam_location=`echo $record | cut -d "|" -f4`
+        			cam_direction=`echo $record | cut -d "|" -f5`
+        			cam_coordinates=`echo $record | cut -d "|" -f6`
+        			cam_streams=`echo $record | cut -d "|" -f7`
+        			echo "$(tput setaf 6)camera cctvid$(tput sgr 0) :" $cam_cctvid
+                    echo "$(tput setaf 6)camera Name$(tput sgr 0) :" $cam_name
+                    echo "$(tput setaf 6)camera County$(tput sgr 0) :" $cam_countyname
+                    echo "$(tput setaf 6)camera location$(tput sgr 0) :" $cam_location
+                    echo "$(tput setaf 6)camera direction$(tput sgr 0) :" $cam_direction
+                    echo "$(tput setaf 6)camera coordinates$(tput sgr 0) :" $cam_coordinates
+                    echo "$(tput setaf 6)camera streams$(tput sgr 0) :" $cam_streams
+        			i=`expr $i + 1`			
+        		echo "$(tput setaf 3)====================================$(tput sgr 0)"
+        		done
+         
+        	fi
+        }
+# --------------------------------------------------------------------------------------------------
+        addRecord()
+        {
+        		echo "$(tput setaf 3)====================================$(tput sgr 0)"
+        		echo "$(tput blink)ENTER CAMERA INFORMATION$(tput sgr 0)"	
+        		echo "$(tput setaf 3)====================================$(tput sgr 0)"
+        		echo -n "CCTV ID :"
+        		read cctvid
+        		echo -n "CAMERA NAME :"	
+        		read name
+        		echo -n "COUNTY :"	
+        		read countyname
+        		echo -n "LOCATION :"	
+        		read location
+        		echo -n "DIRECTION :"	
+        		read direction
+        		echo -n "COORDINATES :"	
+        		read coordinates
+        		echo -n "STREAMS :"	
+        		read streams
+        		record="$cctvid|$name|$countyname|$location|$direction|$coordinates|$streams"
+        		echo $record >> $dbfile
+        		echo "camera information added successfully."
+        }
+# --------------------------------------------------------------------------------------------------
+        getcameraInformation()
+        {
+        		echo "$(tput setaf 3)====================================$(tput sgr 0)"
+        		echo "$(tput blink)FIND CAMERA INFORMATION$(tput sgr 0)"	
+        		echo "$(tput setaf 3)====================================$(tput sgr 0)"
+        		echo -n "Enter camera cctv id :"
+        		read cctvid
+        		total=`cat $dbfile | grep -cwi $cctvid`
+        		if [ $total -gt 0 ]
+        		then
+        			record=`cat $dbfile | grep -wi $cctvid`
+        			cam_cctvid=`echo $record | cut -d "|" -f1`
+        			cam_name=`echo $record | cut -d "|" -f2`
+        			cam_countyname=`echo $record | cut -d "|" -f3`
+        			cam_location=`echo $record | cut -d "|" -f4`
+        			cam_direction=`echo $record | cut -d "|" -f5`
+        			cam_coordinates=`echo $record | cut -d "|" -f6`
+        			cam_streams=`echo $record | cut -d "|" -f7`
+        			echo "$(tput setaf 6)camera cctvid$(tput sgr 0) :" $cam_cctvid
+        			echo "$(tput setaf 6)camera Name$(tput sgr 0) :" $cam_name
+        			echo "$(tput setaf 6)camera County$(tput sgr 0) :" $cam_countyname
+        			echo "$(tput setaf 6)camera location$(tput sgr 0) :" $cam_location
+        			echo "$(tput setaf 6)camera direction$(tput sgr 0) :" $cam_direction
+        			echo "$(tput setaf 6)camera coordinates$(tput sgr 0) :" $cam_coordinates
+        			echo "$(tput setaf 6)camera streams$(tput sgr 0) :" $cam_streams
+                echo "$(tput setaf 3)====================================$(tput sgr 0)"
+        		elif [ $total -eq 0 ]
+        		then
+        			echo "cctvid record found for this id"
+        		fi
+        }
+# --------------------------------------------------------------------------------------------------
+        play_single()
+        {
+                echo "$(tput setaf 3)====================================$(tput sgr 0)"
+                echo "$(tput blink)SINGLE CAMERA FEED$(tput sgr 0)"  
+                echo "$(tput setaf 3)====================================$(tput sgr 0)"
+                echo -n "Enter camera cctv id :"
+                read cctvid
+                total=`cat $dbfile | grep -cwi $cctvid`
+                if [ $total -gt 0 ]
+                then
+                    record=`cat $dbfile | grep -wi $cctvid`
+                    cam_cctvid=`echo $record | cut -d "|" -f1`
+                    cam_name=`echo $record | cut -d "|" -f2`
+                    cam_countyname=`echo $record | cut -d "|" -f3`
+                    cam_location=`echo $record | cut -d "|" -f4`
+                    cam_direction=`echo $record | cut -d "|" -f5`
+                    cam_coordinates=`echo $record | cut -d "|" -f6`
+                    cam_streams=`echo $record | cut -d "|" -f7`
+                    single_cam_top_left="screen -dmS top_left sh -c 'mplayer -noborder -x 640 -y 400 -geometry 0:0 $cam_streams'"
+                    single_cam_feed=(single_cam_top_left)
+                    play_feed()
+                    {
+                    for i in "${single_cam_feed[@]}" 
+                        do 
+                            eval eval '$'$i 
+                        done 
+                    echo "Camera Display Started" 
+                    }
+                    play_feed
+                elif [ $total -eq 0 ]
+                then
+                    echo "cctvid record found for this id"
+                fi
+        }
+# --------------------------------------------------------------------------------------------------
+        play_multiple()
+        {
+                echo "$(tput setaf 3)====================================$(tput sgr 0)"
+                echo "$(tput blink)FIND CAMERA INFORMATION$(tput sgr 0)"  
+                echo "$(tput setaf 3)====================================$(tput sgr 0)"
+                # ----------------------------------------------------------------------------------
+                echo -n "Enter 1st camera cctv id :"
+                read cctvid1
+                total=`cat $dbfile | grep -cwi $cctvid1`
+                if [ $total -gt 0 ]
+                then
+                    record=`cat $dbfile | grep -wi $cctvid1`
+                    cam_cctvid=`echo $record | cut -d "|" -f1`
+                    cam_streams=`echo $record | cut -d "|" -f7`
+                    cam_1=`echo $record | cut -d "|" -f7`
+                fi
+                # ----------------------------------------------------------------------------------
+                echo -n "Enter 2nd camera cctv id :"
+                read cctvid2
+                total=`cat $dbfile | grep -cwi $cctvid2`
+                if [ $total -gt 0 ]
+                then
+                    record=`cat $dbfile | grep -wi $cctvid2`
+                    cam_cctvid=`echo $record | cut -d "|" -f1`
+                    cam_streams=`echo $record | cut -d "|" -f7`
+                    cam_2=`echo $record | cut -d "|" -f7`
+                fi
+                # ----------------------------------------------------------------------------------
+                echo -n "Enter 3rd camera cctv id :"
+                read cctvid3
+                total=`cat $dbfile | grep -cwi $cctvid3`
+                if [ $total -gt 0 ]
+                then
+                    record=`cat $dbfile | grep -wi $cctvid3`
+                    cam_cctvid=`echo $record | cut -d "|" -f1`
+                    cam_streams=`echo $record | cut -d "|" -f7`
+                    cam_3=`echo $record | cut -d "|" -f7`
+                fi
+                # ----------------------------------------------------------------------------------
+                echo -n "Enter 4th camera cctv id :"
+                read cctvid4
+                total=`cat $dbfile | grep -cwi $cctvid4`
+                if [ $total -gt 0 ]
+                then
+                    record=`cat $dbfile | grep -wi $cctvid4`
+                    cam_cctvid=`echo $record | cut -d "|" -f1`
+                    cam_streams=`echo $record | cut -d "|" -f7`
+                    cam_4=`echo $record | cut -d "|" -f7`
+                fi
+                # ----------------------------------------------------------------------------------
+
+                multi_cam_top_left="screen -dmS top_left sh -c 'mplayer -noborder -x 640 -y 400 -geometry 0:0 $cam_1'";
+                multi_cam_top_right="screen -dmS top_right sh -c 'mplayer -noborder -x 640 -y 400 -geometry 640:0 $cam_2'";
+                multi_cam_bottom_left="screen -dmS bottom_left sh -c 'mplayer -noborder -x 640 -y 400 -geometry 0:400 $cam_3'";
+                multi_cam_bottom_right="screen -dmS bottom_right sh -c 'mplayer -noborder -x 640 -y 400 -geometry 640:400 $cam_4'";
+
+                multi_cam_camera_feeds=(multi_cam_top_left multi_cam_top_right multi_cam_bottom_left multi_cam_bottom_right)
+
+                multi_cam()
+                {
+                for i in "${multi_cam_camera_feeds[@]}" 
+                    do 
+                        eval eval '$'$i 
+                done 
+                # ----------------------------------------------------------------------------------
+                echo "Camera Display Started" 
+                }
+                multi_cam
+        }
+# --------------------------------------------------------------------------------------------------      
+        deletecamera()
+        {
+        		echo "$(tput setaf 3)====================================$(tput sgr 0)"
+        		echo "$(tput blink)DELETE CAMERA INFORMATION$(tput sgr 0)"	
+        		echo "$(tput setaf 3)====================================$(tput sgr 0)"
+        		echo -n "Enter camera cctv id :"
+        		read cctvid
+        		total=`cat $dbfile | grep -cwi $cctvid`
+        		if [ $total -gt 0 ]
+        		then
+        			totalrecords=`cat $dbfile | wc -l`
+        			i=1
+        			while [ $i -le $totalrecords ]
+        			do
+        				record=`cat $dbfile | head -$i | tail -1`
+        				findrecord=`echo $record | grep -wci $cctvid`
+        				if [ $findrecord -eq 0 ]
+        				then
+        					echo "$record" >> "tempdata"
+        				fi
+        				i=`expr $i + 1`			
+        			done
+        			mv "tempdata" "data"
+        			echo "camera with id $cctvid deleted."
+        		elif [ $total -eq 0 ]
+        		then
+        			echo "cctvid record found for this id"
+        		fi	
+        }
+# --------------------------------------------------------------------------------------------------
+        modifyRecord()
+        {
+        	echo "$(tput setaf 3)====================================$(tput sgr 0)"
+        	echo "$(tput blink)MODIFY CAMERA INFORMATION$(tput sgr 0)"	
+        	echo "$(tput setaf 3)====================================$(tput sgr 0)"
+        	echo -n "Enter camera cctv id :"
+        	read cctvid
+        	total=`cat $dbfile | grep -cwi $cctvid`
+        	if [ $total -gt 0 ]
+        	then
+        		record=`cat $dbfile | grep -wi $cctvid`
+        		echo "$(tput setaf 3)=================================================$(tput sgr 0)"
+        		echo "$(tput blink)ENTER CAMERA INFORMATION FOR ID$(tput sgr 0) : $cctvid"	
+        		echo "$(tput setaf 3)=================================================$(tput sgr 0)"
+        		echo -n "Enter camera name :"	
+        		read name
+        		echo -n "Enter camera county :"	
+        		read countyname
+        		echo -n "Enter camera location :"	
+        		read location
+        		echo -n "Enter camera direction :"	
+        		read direction
+        		echo -n "Enter camera coordinates :"	
+        		read coordinates
+        		echo -n "Enter camera streams :"	
+        		read streams	
+        		updatedrecord="$cctvid|$name|$countyname|$location|$direction|$coordinates|$streams"
+        		#updates=$(`cat $dbfile` | sed s/$record/$updatedrecord/g)
+        		totalrecords=`cat $dbfile | wc -l`
+        		i=1
+        		while [ $i -le $totalrecords ]
+        		do
+        			record=`cat $dbfile | head -$i | tail -1`
+        			findrecord=`echo $record | grep -wci $cctvid`
+        			if [ $findrecord -eq 0 ]
+        			then
+        				echo "$record" >> "tempdata"
+        			else
+        				echo "$updatedrecord" >> "tempdata"				
+        			fi
+        			i=`expr $i + 1`			
+        		done
+        		mv "tempdata" "data"
+        		echo "Record updated successfully"
+        	else
+        		echo "Record with this cctv id found"
+        	fi			
+        }
+# --------------------------------------------------------------------------------------------------
+    showmenu()
+    {
+        dbfile="data"
+        clearscreen 
+        echo "$(tput setaf 3)=====$(tput sgr 0) $(tput blink)AVAILABLE CHOICES$(tput sgr 0) $(tput setaf 3)=====$(tput sgr 0)"
+        echo "1 - $(tput setaf 6)All records display$(tput sgr 0)"
+        echo "2 - $(tput setaf 6)Add record$(tput sgr 0)"
+        echo "3 - $(tput setaf 6)View record$(tput sgr 0)"
+        echo "4 - $(tput setaf 6)Delete record$(tput sgr 0)"
+        echo "5 - $(tput setaf 6)Modify record$(tput sgr 0)"
+        echo "6 - $(tput setaf 6)Count total records$(tput sgr 0)"
+        echo "7 - $(tput setaf 6)View Single Camera Feed$(tput sgr 0)"
+        echo "8 - $(tput setaf 6)View Multiple Camera Feeds$(tput sgr 0)"
+        echo "E - $(tput setaf 6)Exit$(tput sgr 0)"
+        echo "$(tput setaf 3)==============================$(tput sgr 0)"
+        echo -n "Enter your choice :"
+        read choice
+        case $choice in
+        "1")
+        clearscreen
+        viewAllRecords
+        pause
+        ;;
+        "2")
+        clearscreen
+        addRecord
+        pause
+        ;;
+        "3")
+        clearscreen
+        getcameraInformation
+        pause
+        ;;
+        "4")
+        clearscreen
+        deletecamera
+        pause   
+        ;;
+        "5")
+        clearscreen
+        modifyRecord
+        pause
+        ;;
+        "6")
+        clearscreen
+        getTotalRecords
+        pause
+        ;;
+        "7")
+        clearscreen
+        play_single
+        pause
+        $kill_all_feeds
+        ;;
+        "8")
+        clearscreen
+        play_multiple
+        pause
+        $kill_all_feeds
+        ;;
+        [eE])
+            clearscreen
+            exit
+        ;;
+        *)
+            echo "Invalid choice"
+        ;;
+        esac
+    }
+# --------------------------------------------------------------------------------------------------
+    kill_all_feeds='sudo killall mplayer'
+# --------------------------------------------------------------------------------------------------
+        ############################ END OF FUNCTION DECLARATIONS #########################
+while true; do
+    showmenu
+done
